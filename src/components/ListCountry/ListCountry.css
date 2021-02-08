@@ -1,0 +1,8 @@
+.ListCountry {
+    list-style: none;
+    cursor: pointer;
+    margin: 5px 0;
+}
+.ListCountry span {
+    text-decoration: underline;
+}
