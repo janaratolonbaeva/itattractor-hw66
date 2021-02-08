@@ -2,20 +2,20 @@ import React, {useState, useEffect} from 'react';
 
 import Country from "../../components/Country/Country";
 import ListCountry from "../../components/ListCountry/ListCountry";
-import axios from "axios";
+import axiosCountries from "../../axoisCountries";
+import withLoader from "../../hoc/withLoader/withLoader";
 
 import './Countries.css';
+
 
 const Countries = () => {
 	const [countries, setCountries] = useState([]);
 	const [country, setCountry] = useState({});
 
 	const getCountries = async () => {
-		const randomPromise = Promise.resolve(200);
 		try {
-				await axios.all([
-				await axios.get('/all'),
-				await randomPromise
+				await Promise.all([
+				await axiosCountries.get('/all')
 			])
 				.then(response => {
 					const listCountries = response[0].data.map(country => {
@@ -31,18 +31,17 @@ const Countries = () => {
 	}
 
 	useEffect(() => {
-		getCountries();
+		getCountries().then(console.error);
 	}, []);
 
 	const printInfo = (e) => {
 		const text = e.target.textContent;
-		// console.log(text)
 		countries.forEach( async (item) => {
 			if (text === item.name) {
 				const borders = [];
 
 				for (let i = 0; i < item.borders.length; i++) {
-					await axios.get('/alpha/' + item.borders[i])
+					await axiosCountries.get('/alpha/' + item.borders[i])
 						.then(response => {
 							const url = response.data.name;
 							borders.push(url);
@@ -62,7 +61,6 @@ const Countries = () => {
 		})
 	};
 
-	// console.log(country.borders);
 
 	return (
 		<>
@@ -80,29 +78,14 @@ const Countries = () => {
 						</div>
 					</div>
 					<div className="col-12 col-lg-8">
-						{country.length > 0  ? <Country
-							title={countries[0].name}
-							capital={countries[0].capital}
-							population={countries[0].population}
-							image={countries[0].flag}
-							cioc={countries[0].cioc}
-							borders={countries[0].borders}
-						/> : <Country
+						<Country
 							title={country.name}
 							capital={country.capital}
 							population={country.population}
 							image={country.flag}
 							cioc={country.cioc}
 							borders={country.borders}
-						/>}
-						{/*<Country*/}
-						{/*	title={country.name}*/}
-						{/*	capital={country.capital}*/}
-						{/*	population={country.population}*/}
-						{/*	image={country.flag}*/}
-						{/*	cioc={country.cioc}*/}
-						{/*	borders={country.borders}*/}
-						{/*/>*/}
+						/>
 					</div>
 				</div>
 			</div>
@@ -110,4 +93,4 @@ const Countries = () => {
 	);
 };
 
-export default Countries;
+export default withLoader(Countries, axiosCountries);
