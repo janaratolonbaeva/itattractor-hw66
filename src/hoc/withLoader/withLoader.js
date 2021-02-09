@@ -1,55 +1,44 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import Modal from "../../components/UI/Modal/Modal";
 import Spinner from "../../components/UI/Spinner/Spinner";
 
 const withLoader = (CountriesWrapper, axios) => {
 
 	return function WithLoader(props) {
-		const [loading, setLoading] = React.useState(false);
-		const [error, setError] = React.useState(null)
+		const [loading, setLoading] = useState(false);
+		const [error, setError] = useState(false)
 
-		React.useEffect(() => {
-			setTimeout(() => {
+		useEffect(() => {
 				axios.interceptors.request.use(req => {
 					setLoading(true);
 					return req;
 				});
-			}, 2000);
 		}, []);
 
-		const errorData = React.useMemo(() => {
-			return axios.interceptors.response.use(res => res, error => {
-				console.log('Error ErrorData');
-				setError(error);
-				setLoading(false);
-				throw error;
+		useEffect(() => {
+			axios.interceptors.response.use(res => {
+					setLoading(false);
+					return res;
+				}, error => {
+					setLoading(false);
+					setError(true);
+					throw error;
 			});
 		}, []);
 
-		React.useEffect(() => {
-			return () => {
-				axios.interceptors.response.eject(errorData);
-			}
-		}, [errorData]);
-
 		const errorDismissed = () => {
-			setError(null);
+			setError(false);
 		};
 
-		let CountriesOutput = (
+		return (
 			<>
-				<Modal show={!!error} closed={errorDismissed}>
-					{error && "Network error"}
+				<Modal show={error} closed={errorDismissed}>
+					{error && (error.message || "Network error")}
 				</Modal>
+				{loading && <Spinner/>}
 				<CountriesWrapper {...props} />
 			</>
-		);
-
-		if (loading) {
-			CountriesOutput = <Spinner/>
-		}
-
-		return CountriesOutput;
+		)
 	}
 };
 
